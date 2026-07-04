@@ -9,7 +9,7 @@ load_dotenv()
 
 app = FastAPI()
 llm_client = Groq()
-chroma_client = chromadb.Client()
+chroma_client = chromadb.PersistentClient(path="./chroma_data")
 collection = chroma_client.get_or_create_collection("vehicle_collection")
 
 
@@ -46,5 +46,12 @@ async def add_repair_history(repair: RepairHistory):
 @app.post("/repair-history/search")
 async def search_repair_history(repair: RepairHistoryQuery):    
     result = collection.query(query_texts=[repair.text], n_results=repair.result_length)
-    return {"result" : result['documents'][0]}
 
+
+    documents = result['documents'][0]
+    if not documents:
+        return {"result": [], "message": "No matching records found"}
+
+
+
+    return {"result": documents}

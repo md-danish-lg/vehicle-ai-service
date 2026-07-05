@@ -55,3 +55,33 @@ async def search_repair_history(repair: RepairHistoryQuery):
 
 
     return {"result": documents}
+
+
+
+@app.post("/repair-history/summarize")
+async def summarize_repair_history(query: RepairHistoryQuery):
+    try:
+        request = collection.query(
+            query_texts=[query.text],
+            n_results=query.result_length
+        )
+
+        request = request['documents'][0]
+
+        if not request:
+            raise HTTPException(status_code=404, detail="Repair History Not Found")
+        
+        summary = llm_client.chat.completions.create(
+            messages=[
+                {
+                        "role": "user",
+                        "content": f"summarize the vehicle's repair history based on these records - {request}",
+                    }
+                ],
+                model="llama-3.3-70b-versatile"
+        )
+
+        return {"summary": summary.choices[0].message.content}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"LLM CALL FAILED - {str(e)}")

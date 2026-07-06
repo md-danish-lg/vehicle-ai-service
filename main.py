@@ -18,11 +18,13 @@ collection = chroma_client.get_or_create_collection("vehicle_collection")
 class RepairHistory(BaseModel):
     id: str = Field(min_length=1)
     text: str = Field(min_length=1)
+    vehicle_id: int = 1
 
 
 class RepairHistoryQuery(BaseModel):
     text: str = Field(min_length=1)
     result_length: int = 3
+    vehicle_id: int = 1
 
 @app.get("/")
 async def hello_world():
@@ -38,14 +40,18 @@ async def app_status():
 async def add_repair_history(repair: RepairHistory):
     collection.add(
         documents=[repair.text], 
-        ids=[repair.id]
+        ids=[repair.id],
+        metadatas=[{"vehicle_id" : repair.vehicle_id}]
     )
     return {"status": "record created successfully"}
 
 
 @app.post("/repair-history/search")
 async def search_repair_history(repair: RepairHistoryQuery):    
-    result = collection.query(query_texts=[repair.text], n_results=repair.result_length)
+    result = collection.query(
+        query_texts=[repair.text],
+        n_results=repair.result_length,
+        where={"vehicle_id": repair.vehicle_id})
 
 
     documents = result['documents'][0]
@@ -63,7 +69,8 @@ async def summarize_repair_history(query: RepairHistoryQuery):
     try:
         result = collection.query(
             query_texts=[query.text],
-            n_results=query.result_length
+            n_results=query.result_length,
+            where={"vehicle_id":query.vehicle_id}
         )
 
         documents = result['documents'][0]

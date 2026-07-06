@@ -93,5 +93,7 @@ async def summarize_repair_history(query: RepairHistoryQuery):
             "records_used": len(documents)
             }
 
+    except HTTPException:
+        raise HTTPException(status_code=404, detail="Repair History Not Found")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"LLM CALL FAILED - {str(e)}")

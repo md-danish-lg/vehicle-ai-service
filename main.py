@@ -18,13 +18,13 @@ collection = chroma_client.get_or_create_collection("vehicle_collection")
 class RepairHistory(BaseModel):
     id: str = Field(min_length=1)
     text: str = Field(min_length=1)
-    vehicle_id: int = 1
+    vehicle_id: int
 
 
 class RepairHistoryQuery(BaseModel):
     text: str = Field(min_length=1)
     result_length: int = 3
-    vehicle_id: int = 1
+    vehicle_id: int
 
 @app.get("/")
 async def hello_world():
@@ -94,6 +94,6 @@ async def summarize_repair_history(query: RepairHistoryQuery):
             }
 
     except HTTPException:
-        raise HTTPException(status_code=404, detail="Repair History Not Found")
+        raise 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"LLM CALL FAILED - {str(e)}")

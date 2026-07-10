@@ -107,3 +107,6 @@ def test_summarize_success(mock_collection, mock_llm):
 
     mock_collection.query.assert_called_once()
     mock_llm.chat.completions.create.assert_called_once()
+
+
+

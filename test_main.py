@@ -33,5 +33,38 @@ def test_add_repair_record(mock_collection):
         metadatas=[{"vehicle_id": 2}]
     )
 
+@patch("main.collection")
+def test_search_repair_record(mock_collection):
+
+    mock_collection.query.return_value ={
+        "ids": [["1"]],
+        "documents": [["changed engine oil"]],
+        "metadatas": [[{"vehicle_id": 2 }]]
+    }
+
+
+    response = client.post(
+        "/repair-history/search",
+        json={
+            "vehicle_id": 2,
+            "text": "engine oil",
+            "result_length": 3
+        }
+        
+    )
+
+    assert response.status_code == 200
+
+    assert response.json() == {
+        "result": ["changed engine oil"]
+    }
+
+
+    mock_collection.query.assert_called_once_with(
+        query_texts=["engine oil"],
+        where={"vehicle_id":2 },
+        n_results=3
+    )
+
 
 

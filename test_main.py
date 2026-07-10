@@ -110,3 +110,24 @@ def test_summarize_success(mock_collection, mock_llm):
 
 
 
+@patch("main.collection")
+def test_summarize_not_found(mock_collection):
+
+    mock_collection.query.return_value = {
+        "documents": [[]]
+    }
+
+
+    response = client.post(
+        "/repair-history/summarize",
+        json={
+            "text":"repair history",
+            "vehicle_id":2,
+            "result_length":3
+        }
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Repair History Not Found"
+
+    

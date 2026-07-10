@@ -130,4 +130,26 @@ def test_summarize_not_found(mock_collection):
     assert response.status_code == 404
     assert response.json()["detail"] == "Repair History Not Found"
 
-    
+
+
+@patch("main.llm_client")
+@patch("main.collection")
+def test_summarize_llm_fail(mock_collection, mock_llm):
+    mock_collection.query.return_value = {
+        "documents": [["oil change"]]
+    }
+
+
+    mock_llm.chat.completions.create.side_effect = Exception("Groq API error")
+
+    response = client.post(
+        "/repair-history/summarize",
+        json={
+            "text": "repair history",
+            "vehicle_id": 1,
+            "result_length": 1
+        }
+    )
+
+    assert response.status_code == 500
+    assert "LLM CALL FAILED" in response.json()["detail"]

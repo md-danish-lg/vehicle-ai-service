@@ -4,3 +4,5 @@ groq
 chromadb
 python-dotenv
 pydantic
+httpx2
+pytest

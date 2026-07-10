@@ -10,6 +10,7 @@ A FastAPI microservice providing LLM-powered repair history storage and summariz
 - **ChromaDB** — persistent vector database for semantic search
 - **python-dotenv** — environment variable management
 - **Docker** — containerised deployment
+- **PyTest** — added unit testing with PyTest
 
 ## Architecture
 

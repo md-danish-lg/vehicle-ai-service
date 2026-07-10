@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from main import app
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 client = TestClient(app)
 
@@ -67,4 +67,43 @@ def test_search_repair_record(mock_collection):
     )
 
 
+@patch("main.llm_client")
+@patch("main.collection")
+def test_summarize_success(mock_collection, mock_llm):
+    mock_collection.query.return_value = {
+        "documents": [[
+            "Changed engine oil",
+            "Replaced brake pads"
+        ]]
+    }
 
+
+    mock_summary = MagicMock()
+    mock_summary.choices =[
+        MagicMock(
+            message=MagicMock(
+                content="The vehicle received an oil change and brake replacement."
+            )
+        )
+    ]
+
+    mock_llm.chat.completions.create.return_value = mock_summary
+
+
+    response = client.post(
+        "/repair-history/summarize",
+        json={
+            "text": "Summarize repairs",
+            "vehicle_id": 1,
+            "result_length": 2
+        }
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "summary": "The vehicle received an oil change and brake replacement.",
+        "records_used": 2
+    }
+
+    mock_collection.query.assert_called_once()
+    mock_llm.chat.completions.create.assert_called_once()
